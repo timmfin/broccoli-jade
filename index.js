@@ -22,12 +22,22 @@ JadeFilter.prototype.targetExtension = 'html';
 
 JadeFilter.prototype.processString = function (str, relativePath, srcDir) {
 
+	// If using loadPaths, add the current temp dir
+	var adjustedloadPaths = this.options.loadPaths;
+
+	if (this.options.includeSrcDirInLoadPaths && this.options.loadPaths !== undefined && this.options.loadPaths !== null) {
+		adjustedloadPaths.unshift(srcDir);
+	}
+
 	// Pass along the filename option so that include/extend can work
 	var tempOptions = objectAssign(this.options, {
-		filename: path.join(srcDir, relativePath)
+		filename: path.join(srcDir, relativePath),
+		// basedir: this.options.basedir ? this.options.basedir : srcDir
+		loadPaths: adjustedloadPaths
 	});
 
-	return jade.compile(str, tempOptions)(this.options.data);
+	var func = jade.compile(str, tempOptions);
+	return func(this.options.data);
 };
 
 module.exports = JadeFilter;
